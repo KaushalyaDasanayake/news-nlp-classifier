@@ -1,5 +1,5 @@
 project:
-  name: news_nlp_classifier
+  name: news-nlp-classifier
   seed: 42
 
 paths:

@@ -1,3 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Environments
+.venv/
+venv/
+env/
+
+# Data + artifacts (you already planned to ignore)
+data/raw/
+data/processed/
+artifacts/
+
+# OS / editor
+.DS_Store
+.vscode/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+
+# Packaging/build artifacts
+*.egg-info/
+dist/
+build/
+
 # datasets
 data/raw/
 data/processed/
