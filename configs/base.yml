@@ -1,0 +1,50 @@
+project:
+  name: news_nlp_classifier
+  seed: 42
+
+paths:
+  data_dir: data
+  raw_dir: data/raw
+  processed_dir: data/processed
+  artifacts_dir: artifacts
+
+dataset:
+  name: ag_news
+  train_path: data/processed/train.csv
+  val_path: data/processed/val.csv
+  test_path: data/processed/test.csv
+  text_col: text
+  label_col: label
+
+spacy:
+  model: en_core_web_sm
+  batch_size: 256
+  n_process: 1
+  disable:
+    - ner
+    - parser
+
+preprocessing:
+  lowercase: true
+  replace_urls: true
+  replace_emails: true
+  replace_numbers: false
+  lemmatize: true
+  remove_stopwords: true
+  keep_punct: false
+
+model:
+  type: tfidf_linearsvc_calibrated
+
+  tfidf:
+    ngram_range: [1, 2]
+    min_df: 2
+    max_df: 0.95
+    max_features: 50000
+
+  linearsvc:
+    C: 1.0
+
+  calibration:
+    method: sigmoid   # "sigmoid" is usually stable
+    cv: 3
