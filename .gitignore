@@ -1,0 +1,6 @@
+# datasets
+data/raw/
+data/processed/
+
+# artifacts
+artifacts/

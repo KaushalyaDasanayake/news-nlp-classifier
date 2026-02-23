@@ -1,0 +1,1 @@
+# Makes 'src' installable via 'pip install -e .'
