@@ -2,11 +2,22 @@
 
 from __future__ import annotations
 import re
+from functools import lru_cache
+
 
 URL_RE = re.compile(r"(?i)\b(?:https?://\S+|www\.\S+)\b")
 EMAIL_RE = re.compile(r"(?i)\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b")
 NUMBER_RE = re.compile(r"\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b|\b\d+(?:\.\d+)?\b")
 TOKEN_RE = re.compile(r"<[A-Z]+>|\w+(?:'\w+)?")
+
+# ----- Lazy-load spacy model -----
+
+@lru_cache(maxsize=1)
+def get_nlp():
+    import spacy
+    # disable components we don't need for speed
+    return spacy.load("en_core_web_sm", disable=["ner", "parser"])
+
 
 # ----- Precomplied regex patterns (faster + consistent) ----------
 
@@ -14,7 +25,10 @@ def preprocess(
         text: str | None,
         *,
         replace_numbers: bool = False,
-        keep_punct: bool = False
+        keep_punct: bool = False,
+        use_spacy: bool = False,
+        lemmatize: bool = False,
+        remove_stopwords: bool = False
 ) -> str:
 
     if text is None:
@@ -42,6 +56,27 @@ def preprocess(
     text = re.sub(r"\s+", " ", text).strip()
 
     # tokenize
+    if use_spacy:
+        nlp = get_nlp()
+        doc = nlp(text)
+
+        tokens = []
+        for tok in doc:
+            if tok.is_space:
+                continue
+            if (not keep_punct) and tok.is_punct:
+                continue
+            # remove stopwords (is, to, the)
+            if remove_stopwords and tok.is_stop:
+                continue
+            # tokens.append(tok.text)
+
+            # lemmatize
+            out = tok.lemma_ if lemmatize else tok.text
+            tokens.append(out)
+
+        return " ".join(tokens)
+
     if keep_punct:
         # split punctuation stays attached to words
         tokens = text.split()
@@ -55,21 +90,10 @@ def preprocess(
 
     
 def main() -> None:
-    samples = [
-        "Hello, world! This is NLP.",
-        "Email me at test@example.com!!!",
-        "Price is 1,200.50 USD.",
-    ]
-    for s in samples:
-        # out = preprocess(s)
-        # print(f"IN: {repr(s)} -> OUT: {repr(out)}")
-
-        out1 = preprocess(s, replace_numbers=False, keep_punct=False)
-        out2 = preprocess(s, replace_numbers=True, keep_punct=True)
-
-        print(f"IN: {repr(s)}")
-        print(f"  no_punct:  {repr(out1)}")
-        print(f"  keep_punct: {repr(out2)}")
+        s = "I'm running to the store and I'm happy."
+        print("spacy raw:       ", preprocess(s, use_spacy=True))
+        print("spacy lemma:     ", preprocess(s, use_spacy=True, lemmatize=True))
+        print("spacy no stops:  ", preprocess(s, use_spacy=True, lemmatize=True, remove_stopwords=True))
 
 if __name__ == "__main__":
     main()
