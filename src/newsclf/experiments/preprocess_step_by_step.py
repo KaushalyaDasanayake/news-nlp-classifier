@@ -24,7 +24,7 @@ def get_nlp():
 def preprocess(
         text: str | None,
         *,
-        replace_numbers: bool = False,
+        replace_numbers: bool = False, # default False: numbers can be meaningful
         keep_punct: bool = False,
         use_spacy: bool = False,
         lemmatize: bool = False,
