@@ -5,7 +5,7 @@ import re
 import unicodedata
 from functools import lru_cache
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, Iterable
 
 
 # --- Precompiled regex patterns (fast + consistent) ---
@@ -171,6 +171,67 @@ def preprocess_one(text: Optional[str], cfg: PreprocessConfig, *, cfg_yaml: dict
         tokens = TOKEN_RE.findall(text)
 
     return " ".join(tokens)
+
+# preprocessing for a batch of texts
+def preprocess_many(texts: Iterable[Optional[str]], cfg_yaml: dict) -> list[str]:
+    """
+    Fast preprocessing for a batch of texts.
+    Uses spaCy nlp.pipe() when spaCy is enabled.
+    """
+    cfg = preprocess_config(cfg_yaml)
+    sp = cfg_yaml.get("spacy", {})
+
+    model_name = sp.get("model", "en_core_web_sm")
+    disable = tuple(sp.get("disable", ["ner", "parser"]))
+    batch_size = int(sp.get("batch_size", 256))
+    n_process = int(sp.get("n_process", 1))
+
+    # basic clean
+    cleaned: list[str] = []
+    for t in texts:
+        if t is None:
+            cleaned.append("")
+        elif not isinstance(t, str):
+            cleaned.append(_basic_clean(str(t), cfg))
+        else:
+            cleaned.append(_basic_clean(t, cfg))
+    
+    # if spaCy not enabled make fallback
+    if not cfg.use_spacy:
+        return [preprocess_one(t, cfg) for t in cleaned]
+    
+    # protect placeholders
+    protected_texts: list[str] = []
+    for t in cleaned:
+        pt = t
+        for k, v in SPECIAL_TOKENS.items():
+            pt = pt.replace(k, v)
+        protected_texts.append(pt)
+
+    # fast spaCy pipe
+    nlp = get_nlp(model_name, disable)
+    outputs: list[str] = []
+
+    for doc in nlp.pipe(protected_texts, batch_size=batch_size, n_process=n_process):
+        tokens: list[str] = []
+
+        for tok in doc:
+            if tok.is_space:
+                continue
+            if (not cfg.keep_punct) and tok.is_punct:
+                continue
+            if cfg.remove_stopwords and tok.is_stop:
+                continue
+
+            out = tok.lemma_ if cfg.lemmatize else tok.text
+            out = out.strip()
+            out = REVERSE_SPECIAL_TOKENS.get(out.upper(), out)
+
+            if out:
+                tokens.append(out)
+
+        outputs.append(" ".join(tokens))
+    return outputs
 
 
 if __name__ == "__main__":
