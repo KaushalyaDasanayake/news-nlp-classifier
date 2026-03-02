@@ -14,7 +14,7 @@ EMAIL_RE = re.compile(r"(?i)\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b")
 NUMBER_RE = re.compile(r"\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b|\b\d+(?:\.\d+)?\b")
 
 # keep placeholders like <URL> plus normal words (don't)
-TOKEN_RE = re.compile(r"<[A-Z]+>|\w+(?:'\w+)?")
+TOKEN_RE = re.compile(r"<[A-Za-z]+>|\w+(?:'\w+)?")
 
 # --- Special token protection (so spaCy won't split <URL> into <, URL, >)
 SPECIAL_TOKENS = {
@@ -153,11 +153,18 @@ def preprocess_one(text: Optional[str], cfg: PreprocessConfig, *, cfg_yaml: dict
             if cfg.remove_stopwords and tok.is_stop:
                 continue
 
-            out = tok.lemma_ if cfg.lemmatize else tok.text
-            out = out.strip()
+            raw = tok.text.strip()
 
-            # restore placeholders
-            out = REVERSE_SPECIAL_TOKENS.get(out.upper(), out)
+            # restore placeholders first
+            upper_raw = raw.upper()
+            restored = REVERSE_SPECIAL_TOKENS.get(upper_raw)
+            if restored is not None:
+                tokens.append(restored)
+                continue
+
+            # normal token processing
+            out = tok.lemma_ if cfg.lemmatize else raw
+            out = out.strip()
 
             if out:
                 tokens.append(out)
@@ -170,7 +177,15 @@ def preprocess_one(text: Optional[str], cfg: PreprocessConfig, *, cfg_yaml: dict
     else:
         tokens = TOKEN_RE.findall(text)
 
-    return " ".join(tokens)
+    # Normalize special tokens to uppercase form
+    normalized_tokens = []
+    for tok in tokens:
+        if tok.startswith("<") and tok.endswith(">"):
+            normalized_tokens.append(tok.upper())
+        else:
+            normalized_tokens.append(tok)
+
+    return " ".join(normalized_tokens)
 
 # preprocessing for a batch of texts
 def preprocess_many(texts: Iterable[Optional[str]], cfg_yaml: dict) -> list[str]:
@@ -223,24 +238,21 @@ def preprocess_many(texts: Iterable[Optional[str]], cfg_yaml: dict) -> list[str]
             if cfg.remove_stopwords and tok.is_stop:
                 continue
 
-            out = tok.lemma_ if cfg.lemmatize else tok.text
+            raw = tok.text.strip()
+
+            # restore placeholders first
+            upper_raw = raw.upper()
+            restored = REVERSE_SPECIAL_TOKENS.get(upper_raw)
+            if restored is not None:
+                tokens.append(restored)
+                continue
+
+            # normal token processing
+            out = tok.lemma_ if cfg.lemmatize else raw
             out = out.strip()
-            out = REVERSE_SPECIAL_TOKENS.get(out.upper(), out)
 
             if out:
                 tokens.append(out)
 
         outputs.append(" ".join(tokens))
     return outputs
-
-
-if __name__ == "__main__":
-    cfg = PreprocessConfig(
-        lowercase=True,
-        lemmatize=True,
-        remove_stopwords=True,
-        use_spacy=True,
-    )
-
-    s = "I'm doing my favorite works and I'm happy."
-    print(preprocess_one(s, cfg))
