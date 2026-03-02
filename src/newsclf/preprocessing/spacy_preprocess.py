@@ -5,7 +5,7 @@ import re
 import unicodedata
 from functools import lru_cache
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Optional
 
 
 # --- Precompiled regex patterns (fast + consistent) ---
@@ -103,7 +103,83 @@ def _basic_clean(text: str, cfg: PreprocessConfig) -> str:
     return text
 
 
+# hanle None/none-string
+def preprocess_one(text: Optional[str], cfg: PreprocessConfig, *, cfg_yaml: dict | None = None) -> str:
+    """
+    Preprocess one text into a normalized string.
+    """
+    
+    # safe input handling
+    if text is None:
+        return ""
+    
+    if not isinstance(text, str):
+        text = str(text)
+
+    # basic cleaning
+    text = _basic_clean(text, cfg)
+
+    if not text:
+        return ""
+    
+    # spaCy branch
+    if cfg.use_spacy:
+        # protect placeholders before spaCy
+        protected = text
+        for k, v in SPECIAL_TOKENS.items():
+            protected = protected.replace(k, v)
+
+        # get model settings
+        model_name = "en_core_web_sm"
+        disable = ("ner", "parser")
+
+        if cfg_yaml is not None:
+            sp = cfg_yaml.get("spacy", {})
+            model_name = sp.get("model", model_name)
+            disable = tuple(sp.get("disable", list(disable)))
+
+        nlp = get_nlp(model_name, disable)
+        doc = nlp(protected)
+
+        tokens: list[str] = []
+
+        for tok in doc:
+            if tok.is_space:
+                continue
+
+            if (not cfg.keep_punct) and tok.is_punct:
+                continue
+
+            if cfg.remove_stopwords and tok.is_stop:
+                continue
+
+            out = tok.lemma_ if cfg.lemmatize else tok.text
+            out = out.strip()
+
+            # restore placeholders
+            out = REVERSE_SPECIAL_TOKENS.get(out.upper(), out)
+
+            if out:
+                tokens.append(out)
+
+        return " ".join(tokens)
+    
+    # regex fallback branch
+    if cfg.keep_punct:
+        tokens = text.split()
+    else:
+        tokens = TOKEN_RE.findall(text)
+
+    return " ".join(tokens)
+
+
 if __name__ == "__main__":
-    cfg = PreprocessConfig(replace_urls=True, replace_emails=True, replace_numbers=True, lowercase=True)
-    s = " Email: Test@Example.com   Visit https://example.com \n Price 1,200.50 "
-    print(_basic_clean(s, cfg))
+    cfg = PreprocessConfig(
+        lowercase=True,
+        lemmatize=True,
+        remove_stopwords=True,
+        use_spacy=True,
+    )
+
+    s = "I'm doing my favorite works and I'm happy."
+    print(preprocess_one(s, cfg))
