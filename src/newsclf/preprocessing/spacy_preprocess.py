@@ -1,12 +1,12 @@
 # spacy preprocess
 
 from __future__ import annotations
+
 import re
 import unicodedata
-from functools import lru_cache
+from collections.abc import Iterable
 from dataclasses import dataclass
-from typing import Any, Optional, Iterable
-
+from functools import lru_cache
 
 # --- Precompiled regex patterns (fast + consistent) ---
 URL_RE = re.compile(r"(?i)\b(?:https?://\S+|www\.\S+)\b")
@@ -102,9 +102,7 @@ def _basic_clean(text: str, cfg: PreprocessConfig) -> str:
 
 
 # hanle None/none-string
-def preprocess_one(
-    text: Optional[str], cfg: PreprocessConfig, *, cfg_yaml: dict | None = None
-) -> str:
+def preprocess_one(text: str | None, cfg: PreprocessConfig, *, cfg_yaml: dict | None = None) -> str:
     """
     Preprocess one text into a normalized string.
     """
@@ -189,7 +187,7 @@ def preprocess_one(
 
 
 # preprocessing for a batch of texts
-def preprocess_many(texts: Iterable[Optional[str]], cfg_yaml: dict) -> list[str]:
+def preprocess_many(texts: Iterable[str | None], cfg_yaml: dict) -> list[str]:
     """
     Fast preprocessing for a batch of texts.
     Uses spaCy nlp.pipe() when spaCy is enabled.

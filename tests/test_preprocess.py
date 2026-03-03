@@ -10,7 +10,7 @@ from newsclf.preprocessing.spacy_preprocess import (
 
 
 def load_cfg() -> dict:
-    with open("configs/base.yaml", "r", encoding="utf-8") as f:
+    with open("configs/base.yaml", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 

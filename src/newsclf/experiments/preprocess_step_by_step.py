@@ -1,9 +1,9 @@
 # spacy preprocess
 
 from __future__ import annotations
+
 import re
 from functools import lru_cache
-
 
 URL_RE = re.compile(r"(?i)\b(?:https?://\S+|www\.\S+)\b")
 EMAIL_RE = re.compile(r"(?i)\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b")

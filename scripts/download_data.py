@@ -11,7 +11,7 @@ from datasets import load_dataset
 
 
 def load_config(path: str = "configs/base.yaml") -> dict:
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 

@@ -6,6 +6,7 @@ import argparse
 import json
 from datetime import date
 from pathlib import Path
+
 import joblib
 import pandas as pd
 import yaml
@@ -18,7 +19,7 @@ def load_cfg(path: str) -> dict:
     """
     Load YAML config into a dict.
     """
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
@@ -76,7 +77,7 @@ def main() -> None:
     cm = confusion_matrix(y_true, y_pred)
 
     # load label list
-    with open(labels_path, "r", encoding="utf-8") as f:
+    with open(labels_path, encoding="utf-8") as f:
         label_info = json.load(f)
     labels = label_info["labels"]
 

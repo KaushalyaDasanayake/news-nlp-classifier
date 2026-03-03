@@ -1,15 +1,16 @@
 # Entry point scripts for training/eval
 
 from __future__ import annotations
+
 import argparse
-from pathlib import Path
-import pandas as pd
-import yaml
+import hashlib
 import json
 import time
-import hashlib
+from pathlib import Path
 
 import joblib
+import pandas as pd
+import yaml
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 
@@ -20,7 +21,7 @@ def loaf_cfg(path: str) -> dict:
     """
     Load YAML config into a python dict
     """
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         return yaml.safe_load(f)
 
 
