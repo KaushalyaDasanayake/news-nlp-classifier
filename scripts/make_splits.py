@@ -32,7 +32,6 @@ def main() -> None:
     ensure_dir(processed_dir)
     ensure_dir(artifacts_dir)
 
-    text_col = cfg["dataset"]["text_col"]
     label_col = cfg["dataset"]["label_col"]
     seed = int(cfg["project"]["seed"])
 

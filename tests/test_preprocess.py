@@ -3,10 +3,9 @@ from __future__ import annotations
 import yaml
 
 from newsclf.preprocessing.spacy_preprocess import (
-    preprocess_config,
+    PreprocessConfig,
     preprocess_many,
     preprocess_one,
-    PreprocessConfig,
 )
 
 
