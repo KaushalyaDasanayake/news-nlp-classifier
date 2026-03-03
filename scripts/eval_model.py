@@ -6,12 +6,13 @@ import argparse
 import json
 from datetime import date
 from pathlib import Path
-import joblib 
+import joblib
 import pandas as pd
 import yaml
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 from newsclf.preprocessing.spacy_preprocess import preprocess_many
+
 
 def load_cfg(path: str) -> dict:
     """
@@ -19,7 +20,8 @@ def load_cfg(path: str) -> dict:
     """
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
-    
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="configs/base.yaml", help="Path to YAML config")
@@ -36,7 +38,7 @@ def main() -> None:
     # check required files exist
     if not test_path.exists():
         raise FileNotFoundError(f"Test file not found: {test_path}")
-    
+
     vec_path = artifacts_dir / "vectorizer.joblib"
     model_path = artifacts_dir / "model.joblib"
     labels_path = artifacts_dir / "labels.json"
@@ -47,7 +49,7 @@ def main() -> None:
                 f"Missing artifacts: {p}\n"
                 "Run training first: python scripts/train_model.py --config configs/base.yaml"
             )
-        
+
     # load data
     df = pd.read_csv(test_path)
     X_raw = df[text_col].astype(str).tolist()
@@ -61,7 +63,7 @@ def main() -> None:
     # eval uses transform(), not fit_transform()
     X_vec = vec.transform(X_clean)
 
-    # predict 
+    # predict
     y_pred = clf.predict(X_vec)
 
     # metrics
@@ -73,7 +75,7 @@ def main() -> None:
     # confusion matrix: rows=true labels, cols=pred labels
     cm = confusion_matrix(y_true, y_pred)
 
-    # load label list 
+    # load label list
     with open(labels_path, "r", encoding="utf-8") as f:
         label_info = json.load(f)
     labels = label_info["labels"]
@@ -100,13 +102,16 @@ def main() -> None:
         json.dump(payload, f, indent=2)
 
     # save confusion matrix as CSV with headers
-    cm_df = pd.DataFrame(cm, index=[f"true_{i}" for i in labels], columns=[f"pred_{i}" for i in labels])
+    cm_df = pd.DataFrame(
+        cm, index=[f"true_{i}" for i in labels], columns=[f"pred_{i}" for i in labels]
+    )
     cm_df.to_csv(cm_csv_path, index=True)
 
     print("accuracy:", acc)
     print("macro f1:", payload["macro_f1"])
     print("saved:", eval_json_path)
     print("saved:", cm_csv_path)
+
 
 if __name__ == "__main__":
     main()

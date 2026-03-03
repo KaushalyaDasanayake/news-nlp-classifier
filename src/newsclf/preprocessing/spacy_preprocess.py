@@ -17,26 +17,23 @@ NUMBER_RE = re.compile(r"\b\d{1,3}(?:,\d{3})+(?:\.\d+)?\b|\b\d+(?:\.\d+)?\b")
 TOKEN_RE = re.compile(r"<[A-Za-z]+>|\w+(?:'\w+)?")
 
 # --- Special token protection (so spaCy won't split <URL> into <, URL, >)
-SPECIAL_TOKENS = {
-    "<EMAIL>": "SPECIAL_EMAIL",
-    "<URL>": "SPECIAL_URL",
-    "<NUM>": "SPECIAL_NUM"
-}
+SPECIAL_TOKENS = {"<EMAIL>": "SPECIAL_EMAIL", "<URL>": "SPECIAL_URL", "<NUM>": "SPECIAL_NUM"}
 REVERSE_SPECIAL_TOKENS = {v: k for k, v in SPECIAL_TOKENS.items()}
+
 
 @dataclass(frozen=True)
 class PreprocessConfig:
     lowercase: bool = True
     replace_urls: bool = True
     replace_emails: bool = True
-    replace_numbers: bool = False 
+    replace_numbers: bool = False
     keep_punct: bool = False
     lemmatize: bool = False
     remove_stopwords: bool = False
     use_spacy: bool = False
 
 
-def preprocess_config(cfg:dict) -> PreprocessConfig:
+def preprocess_config(cfg: dict) -> PreprocessConfig:
     """
     Convert config/base.yaml dict -> PreprocessConfig.
     """
@@ -56,7 +53,7 @@ def preprocess_config(cfg:dict) -> PreprocessConfig:
         keep_punct=bool(p.get("keep_punct", False)),
         lemmatize=bool(p.get("lemmatize", False)),
         remove_stopwords=bool(p.get("remove_stopwords", False)),
-        use_spacy=use_spacy
+        use_spacy=use_spacy,
     )
 
 
@@ -67,6 +64,7 @@ def get_nlp(model_name: str, disable: tuple[str, ...]):
     Cached so repeated calls are fast.
     """
     import spacy
+
     return spacy.load(model_name, disable=list(disable))
 
 
@@ -78,17 +76,17 @@ def _basic_clean(text: str, cfg: PreprocessConfig) -> str:
     # trim spaces at both ends
     text = text.strip()
 
-    # normalize unicode 
+    # normalize unicode
     text = unicodedata.normalize("NFKC", text)
 
-    # lowercase 
+    # lowercase
     if cfg.lowercase:
         text = text.lower()
 
-    # collapse whitespace 
+    # collapse whitespace
     text = re.sub(r"\s+", " ", text)
 
-    # replace patterns with special tokens 
+    # replace patterns with special tokens
     if cfg.replace_emails:
         text = EMAIL_RE.sub(" <EMAIL> ", text)
 
@@ -104,15 +102,17 @@ def _basic_clean(text: str, cfg: PreprocessConfig) -> str:
 
 
 # hanle None/none-string
-def preprocess_one(text: Optional[str], cfg: PreprocessConfig, *, cfg_yaml: dict | None = None) -> str:
+def preprocess_one(
+    text: Optional[str], cfg: PreprocessConfig, *, cfg_yaml: dict | None = None
+) -> str:
     """
     Preprocess one text into a normalized string.
     """
-    
+
     # safe input handling
     if text is None:
         return ""
-    
+
     if not isinstance(text, str):
         text = str(text)
 
@@ -121,7 +121,7 @@ def preprocess_one(text: Optional[str], cfg: PreprocessConfig, *, cfg_yaml: dict
 
     if not text:
         return ""
-    
+
     # spaCy branch
     if cfg.use_spacy:
         # protect placeholders before spaCy
@@ -170,7 +170,7 @@ def preprocess_one(text: Optional[str], cfg: PreprocessConfig, *, cfg_yaml: dict
                 tokens.append(out)
 
         return " ".join(tokens)
-    
+
     # regex fallback branch
     if cfg.keep_punct:
         tokens = text.split()
@@ -186,6 +186,7 @@ def preprocess_one(text: Optional[str], cfg: PreprocessConfig, *, cfg_yaml: dict
             normalized_tokens.append(tok)
 
     return " ".join(normalized_tokens)
+
 
 # preprocessing for a batch of texts
 def preprocess_many(texts: Iterable[Optional[str]], cfg_yaml: dict) -> list[str]:
@@ -210,11 +211,11 @@ def preprocess_many(texts: Iterable[Optional[str]], cfg_yaml: dict) -> list[str]
             cleaned.append(_basic_clean(str(t), cfg))
         else:
             cleaned.append(_basic_clean(t, cfg))
-    
+
     # if spaCy not enabled make fallback
     if not cfg.use_spacy:
         return [preprocess_one(t, cfg) for t in cleaned]
-    
+
     # protect placeholders
     protected_texts: list[str] = []
     for t in cleaned:

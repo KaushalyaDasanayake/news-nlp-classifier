@@ -2,17 +2,19 @@ from __future__ import annotations
 
 import yaml
 
-from newsclf.preprocessing.spacy_preprocess import(
+from newsclf.preprocessing.spacy_preprocess import (
     preprocess_config,
     preprocess_many,
     preprocess_one,
-    PreprocessConfig
+    PreprocessConfig,
 )
+
 
 def load_cfg() -> dict:
     with open("configs/base.yaml", "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
-    
+
+
 def test_url_replacement():
     cfg = load_cfg()
     cfg["preprocessing"]["replace_urls"] = True
@@ -24,10 +26,12 @@ def test_url_replacement():
     out = preprocess_many(["Visit https://example.com now"], cfg)[0]
     assert "<URL>" in out
 
+
 def test_empty_input_returns_empty_string():
     pcfg = PreprocessConfig()
     assert preprocess_one("", pcfg) == ""
     assert preprocess_one(None, pcfg) == ""
+
 
 def test_deterministic():
     cfg = load_cfg()

@@ -15,12 +15,14 @@ from sklearn.linear_model import LogisticRegression
 
 from newsclf.preprocessing.spacy_preprocess import preprocess_many
 
+
 def loaf_cfg(path: str) -> dict:
     """
     Load YAML config into a python dict
     """
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
+
 
 # create unique fingerprint
 def sha256_of_file(path: str) -> str:
@@ -29,6 +31,7 @@ def sha256_of_file(path: str) -> str:
         for chunk in iter(lambda: f.read(1024 * 1024), b""):
             h.update(chunk)
         return h.hexdigest()
+
 
 def main() -> None:
     parser = argparse.ArgumentParser()
@@ -47,7 +50,7 @@ def main() -> None:
             f"Train file not found: {train_file}\n"
             "Run: python scripts/download_data.py and python scripts/make_splits.py first."
         )
-    
+
     df = pd.read_csv(train_file)
     print("loaded:", train_file)
     print("rows:", len(df))
@@ -59,13 +62,13 @@ def main() -> None:
     X = preprocess_many(X_raw, cfg)
     print("Preprocessing done")
 
-    #TF-IDF + LogReg
+    # TF-IDF + LogReg
     tfidf_cfg = cfg["model"]["tfidf"]
     vec = TfidfVectorizer(
         ngram_range=tuple(tfidf_cfg["ngram_range"]),
         min_df=int(tfidf_cfg["min_df"]),
         max_df=float(tfidf_cfg["max_df"]),
-        max_features=int(tfidf_cfg["max_features"])
+        max_features=int(tfidf_cfg["max_features"]),
     )
 
     X_vec = vec.fit_transform(X)
@@ -91,12 +94,13 @@ def main() -> None:
         "config_sha256": sha256_of_file(args.config),
         "train_path": train_path,
         "train_rows": len(df),
-        "model_type": "tfidf_logreg"
+        "model_type": "tfidf_logreg",
     }
     with open(art_dir / "train_meta.json", "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2)
 
     print("Saved artifacts to:", art_dir)
+
 
 if __name__ == "__main__":
     main()

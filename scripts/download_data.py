@@ -9,10 +9,11 @@ import pandas as pd
 import yaml
 from datasets import load_dataset
 
+
 def load_config(path: str = "configs/base.yaml") -> dict:
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
-    
+
 
 def ensure_dir(p: Path) -> None:
     p.mkdir(parents=True, exist_ok=True)
@@ -36,9 +37,8 @@ def main() -> None:
 
     train_df.to_csv(raw_dir / "ag_news_train_raw.csv", index=False)
     test_df.to_csv(raw_dir / "ag_news_test_raw.csv", index=False)
-    
-    print("Saved raw AG News dataset to data/raw/")
 
+    print("Saved raw AG News dataset to data/raw/")
 
 
 if __name__ == "__main__":
