@@ -25,3 +25,11 @@ cfg = yaml.safe_load(open("configs/base.yaml"))
 texts = ["Email me test@example.com and visit https://example.com"] * 3
 print(preprocess_many(texts, cfg))
 PY
+
+---
+
+## Baseline results (AG News)
+- Accuracy: **0.9187**
+- Macro F1: **0.9185**
+- Eval output: `eval/results/eval_2026-03-04.json`
+- Confusion matrix: `eval/results/confusion_matrix_2026-03-04.csv`
