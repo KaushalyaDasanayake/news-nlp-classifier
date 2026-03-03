@@ -38,3 +38,6 @@ data/processed/
 
 # artifacts
 artifacts/
+
+# eval results
+eval/results/
