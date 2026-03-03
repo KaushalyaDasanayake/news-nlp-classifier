@@ -25,6 +25,8 @@ jobs:
         run: |
           ruff check .
 
+      - run: python -m spacy download en_core_web_sm
+
       - name: Pytest
         run: |
           pytest
