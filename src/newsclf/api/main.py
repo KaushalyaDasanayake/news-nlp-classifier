@@ -22,6 +22,12 @@ VEC = None
 CLF = None
 LABELS: list[int] | None = None
 
+LABEL_MAP = {
+    0: "World",
+    1: "Sports",
+    2: "Business",
+    3: "Sci/Tech"
+}
 
 class RequestIdMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -82,7 +88,7 @@ def predict(payload: PredictRequest, request: Request):
     pred_idx = int(probs.argmax())
     pred_label_id = LABELS[pred_idx]
 
-    label_str = str(pred_label_id)
+    label_str = LABEL_MAP[pred_label_id]
     confidence = float(probs[pred_idx])
 
     request_id = request.state.request_id
