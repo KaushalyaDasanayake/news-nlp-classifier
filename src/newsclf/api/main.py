@@ -1,11 +1,13 @@
 # FastAPI implementation
 from __future__ import annotations
+
 import json
-import yaml
 import time
 import uuid
-import joblib
 from pathlib import Path
+
+import joblib
+import yaml
 from fastapi import FastAPI, HTTPException, Request
 from starlette.middleware.base import BaseHTTPMiddleware
 
