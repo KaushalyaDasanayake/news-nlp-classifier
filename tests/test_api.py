@@ -9,6 +9,7 @@ from newsclf.api.main import app
 
 client = TestClient(app)
 
+
 @pytest.fixture(autouse=True)
 def mock_api_dependencies():
     """
@@ -46,6 +47,7 @@ def mock_api_dependencies():
         mock_prep.return_value = ["cleaned text"]
 
         yield
+
 
 # test health
 def test_health():
