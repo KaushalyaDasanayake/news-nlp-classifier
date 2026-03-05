@@ -1,6 +1,6 @@
 # news-nlp-classifier
 
-**Live Demo:** [View App](https://news-nlp-classifier.streamlit.app/) | **API Endpoint:** [Hugging Face Space](https://kaush97-news-classifier-api.hf.space/)
+**Live Demo:** [View App](https://news-nlp-classifier.streamlit.app/) | **Interactive API Docs:** [Swagger UI](https://kaush97-news-classifier-api.hf.space/docs)
 
 End-to-end news article classification system with spaCy preprocessing, TF-IDF/Word2Vec models, FastAPI API, Dockerized deployment, and a simple UI.
 
