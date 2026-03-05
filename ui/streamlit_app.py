@@ -1,7 +1,7 @@
 import requests
 import streamlit as st
 
-API_URL = "https://kaush97-news-classifier-api.hf.space/predict"
+API_URL = st.secrets["API_URL"]
 
 st.set_page_config(page_title="News Classifier", page_icon="📰")
 st.title("📰 News Classifier")
