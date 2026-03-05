@@ -22,6 +22,7 @@ VEC = None
 CLF = None
 LABELS: list[int] | None = None
 
+
 class RequestIdMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         request_id = str(uuid.uuid4())
@@ -35,7 +36,8 @@ class RequestIdMiddleware(BaseHTTPMiddleware):
 
         response.headers["x-request-id"] = request_id
         return response
-    
+
+
 app.add_middleware(RequestIdMiddleware)
 
 
@@ -85,6 +87,3 @@ def predict(payload: PredictRequest, request: Request):
 
     request_id = request.state.request_id
     return PredictResponse(label=label_str, confidence=confidence, request_id=request_id)
-
-
-

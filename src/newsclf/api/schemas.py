@@ -7,6 +7,8 @@ from pydantic import BaseModel, Field
 
 class PredictRequest(BaseModel):
     text: str = Field(..., description="News article text")
+
+
 class PredictResponse(BaseModel):
     label: str
     confidence: float
