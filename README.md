@@ -58,6 +58,8 @@ docker build -t newsclf -f docker/Dockerfile .
 ### 2. Run the container
 docker run --rm --name newsclf -p 8000:8000 newsclf
 
+---
+
 ## API Documentation
 The API includes middleware that calculates latency_ms and attaches a unique x-request-id to the headers of every response.
 
