@@ -29,7 +29,7 @@ RUN python -m spacy download en_core_web_sm
 COPY . .
 
 # expose the port FastAPI runs on
-EXPOSE 8000
+EXPOSE 7860
 
 # command to run the API
-CMD ["uvicorn", "newsclf.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "newsclf.api.main:app", "--host", "0.0.0.0", "--port", "7860"]
